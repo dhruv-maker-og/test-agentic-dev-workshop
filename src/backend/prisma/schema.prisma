@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// PRE-BUILT — do not modify
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+}
+
+// PRE-BUILT — do not modify
+model Restaurant {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  imageUrl    String
+  menuItems   MenuItem[]
+  createdAt   DateTime   @default(now())
+}
+
+// PRE-BUILT — do not modify
+model MenuItem {
+  id           Int        @id @default(autoincrement())
+  restaurantId Int
+  name         String
+  description  String
+  price        Float
+  imageUrl     String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+// Cart and CartItem models are added by the [DATABASE] Issue
+// during the workshop — design-agent produces the schema additions
