@@ -55,11 +55,12 @@ cd src/backend && npm install
 # Install frontend dependencies
 cd ../frontend && npm install
 
-# Set up environment
-cp .env.example .env
+
 
 # Set up database
 cd src/backend
+# Set up environment
+cp .env.example .env
 npx prisma migrate dev --name init
 npx prisma db seed
 
