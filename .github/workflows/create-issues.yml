@@ -65,8 +65,8 @@ jobs:
 
             # Exact match duplicate check — paginated
             EXISTING=$(gh issue list --state all --limit 500 --json title \
-              --jq --arg t "$TITLE" '.[] | select(.title == $t) | .title' \
-              | head -1)
+              --jq ".[] | select(.title == \"$TITLE\") | .title" \
+            | head -1)
 
             echo "Existing match: [$EXISTING]"
 
