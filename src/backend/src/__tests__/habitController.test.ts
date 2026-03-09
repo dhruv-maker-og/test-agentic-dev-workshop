@@ -9,11 +9,14 @@ jest.mock('@prisma/client', () => {
       findMany: jest.fn(),
       findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
     habitLog: {
       findUnique: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
   }
   return { PrismaClient: jest.fn(() => mockPrisma) }
@@ -27,11 +30,14 @@ const prisma = new PrismaClient() as unknown as {
     findMany: jest.Mock
     findFirst: jest.Mock
     create: jest.Mock
+    update: jest.Mock
+    delete: jest.Mock
   }
   habitLog: {
     findUnique: jest.Mock
     create: jest.Mock
     delete: jest.Mock
+    deleteMany: jest.Mock
   }
 }
 
@@ -332,6 +338,111 @@ describe('Habit Tracking API', () => {
 
       expect(res.status).toBe(200)
       expect(res.body.completed).toBe(false)
+    })
+  })
+
+  // ─── PUT /api/habits/:id ──────────────────────────────────────
+
+  describe('PUT /api/habits/:id', () => {
+    it('returns 401 without auth token', async () => {
+      const res = await request(app)
+        .put('/api/habits/1')
+        .send({ name: 'Updated' })
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 404 when habit does not exist', async () => {
+      prisma.habit.findFirst.mockResolvedValue(null)
+
+      const res = await request(app)
+        .put('/api/habits/999')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({ name: 'Updated' })
+
+      expect(res.status).toBe(404)
+      expect(res.body.error).toBe('Habit not found')
+    })
+
+    it('returns 200 with the updated habit', async () => {
+      const existingHabit = {
+        id: 1,
+        userId: TEST_USER_ID,
+        name: 'Exercise',
+        description: 'Daily exercise',
+        frequency: 'Daily',
+        createdAt: new Date(),
+      }
+
+      const updatedHabit = {
+        ...existingHabit,
+        name: 'Morning Exercise',
+        frequency: 'Weekly',
+      }
+
+      prisma.habit.findFirst.mockResolvedValue(existingHabit)
+      prisma.habit.update.mockResolvedValue(updatedHabit)
+
+      const res = await request(app)
+        .put('/api/habits/1')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({ name: 'Morning Exercise', frequency: 'Weekly' })
+
+      expect(res.status).toBe(200)
+      expect(res.body.name).toBe('Morning Exercise')
+      expect(res.body.frequency).toBe('Weekly')
+      expect(res.body.userId).toBe(TEST_USER_ID)
+    })
+  })
+
+  // ─── DELETE /api/habits/:id ───────────────────────────────────
+
+  describe('DELETE /api/habits/:id', () => {
+    it('returns 401 without auth token', async () => {
+      const res = await request(app).delete('/api/habits/1')
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 404 when habit does not exist', async () => {
+      prisma.habit.findFirst.mockResolvedValue(null)
+
+      const res = await request(app)
+        .delete('/api/habits/999')
+        .set('Authorization', `Bearer ${validToken}`)
+
+      expect(res.status).toBe(404)
+      expect(res.body.error).toBe('Habit not found')
+    })
+
+    it('returns 204 and deletes the habit and its logs', async () => {
+      prisma.habit.findFirst.mockResolvedValue({
+        id: 1,
+        userId: TEST_USER_ID,
+        name: 'Exercise',
+        description: 'Daily exercise',
+        frequency: 'Daily',
+        createdAt: new Date(),
+      })
+      prisma.habitLog.deleteMany.mockResolvedValue({ count: 3 })
+      prisma.habit.delete.mockResolvedValue({
+        id: 1,
+        userId: TEST_USER_ID,
+        name: 'Exercise',
+        description: 'Daily exercise',
+        frequency: 'Daily',
+        createdAt: new Date(),
+      })
+
+      const res = await request(app)
+        .delete('/api/habits/1')
+        .set('Authorization', `Bearer ${validToken}`)
+
+      expect(res.status).toBe(204)
+      expect(prisma.habitLog.deleteMany).toHaveBeenCalledWith({
+        where: { habitId: 1 },
+      })
+      expect(prisma.habit.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      })
     })
   })
 })
