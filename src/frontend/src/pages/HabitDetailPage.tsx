@@ -8,6 +8,14 @@ export default function HabitDetailPage() {
   const [habit, setHabit] = useState<HabitDetail | null>(null)
   const [error, setError] = useState('')
 
+  const cardStyle: React.CSSProperties = {
+    padding: '1.5rem',
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius)',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
+  }
+
   const loadHabit = useCallback(async () => {
     if (!id) return
     try {
@@ -75,11 +83,7 @@ export default function HabitDetailPage() {
 
       <div
         style={{
-          padding: '1.5rem',
-          backgroundColor: 'var(--surface)',
-          borderRadius: 'var(--radius)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-sm)',
+          ...cardStyle,
           marginBottom: '1.5rem',
         }}
       >
@@ -111,15 +115,7 @@ export default function HabitDetailPage() {
         </div>
       </div>
 
-      <div
-        style={{
-          padding: '1.5rem',
-          backgroundColor: 'var(--surface)',
-          borderRadius: 'var(--radius)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
+      <div style={cardStyle}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>
           Completion History
         </h3>

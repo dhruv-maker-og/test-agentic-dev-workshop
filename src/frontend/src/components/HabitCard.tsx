@@ -24,7 +24,15 @@ export default function HabitCard({
   return (
     <div
       data-testid="habit-card"
+      role="button"
+      tabIndex={0}
       onClick={() => onClick(id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick(id)
+        }
+      }}
       style={{
         padding: '1.25rem',
         backgroundColor: 'var(--surface)',
