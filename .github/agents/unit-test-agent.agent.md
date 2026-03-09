@@ -1,5 +1,5 @@
 ---
-name: user-story-agent
+name: unit-test-agent
 description: Decomposes a BRD into atomic, INVEST-compliant GitHub Issues grouped
   by functional slice and role. Use this agent when asked to create user stories,
   decompose requirements into Issues, or generate GitHub Issues from a BRD.
