@@ -45,6 +45,7 @@ export default function HabitDetailPage() {
 
   const handleDelete = async () => {
     if (!id) return
+    if (!window.confirm('Are you sure you want to delete this habit? This action cannot be undone.')) return
     try {
       await deleteHabit(parseInt(id, 10))
       navigate('/home')
