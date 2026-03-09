@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchHabitById, HabitDetail } from '../services/habitService'
+import { fetchHabitById, updateHabit, deleteHabit, HabitDetail } from '../services/habitService'
+import HabitForm from '../components/HabitForm'
 
 export default function HabitDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [habit, setHabit] = useState<HabitDetail | null>(null)
   const [error, setError] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
 
   const cardStyle: React.CSSProperties = {
     padding: '1.5rem',
@@ -29,6 +31,27 @@ export default function HabitDetailPage() {
   useEffect(() => {
     loadHabit()
   }, [loadHabit])
+
+  const handleUpdate = async (data: { name: string; description: string; frequency: string }) => {
+    if (!id) return
+    try {
+      await updateHabit(parseInt(id, 10), data)
+      setIsEditing(false)
+      await loadHabit()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update habit')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!id) return
+    try {
+      await deleteHabit(parseInt(id, 10))
+      navigate('/home')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete habit')
+    }
+  }
 
   if (error) {
     return (
@@ -113,7 +136,52 @@ export default function HabitDetailPage() {
             🔥 {habit.streak} day streak
           </span>
         </div>
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+          <button
+            data-testid="edit-habit-button"
+            onClick={() => setIsEditing(!isEditing)}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--surface)',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+            }}
+          >
+            {isEditing ? 'Cancel Edit' : '✏️ Edit'}
+          </button>
+          <button
+            data-testid="delete-habit-button"
+            onClick={handleDelete}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid #e74c3c',
+              backgroundColor: '#e74c3c',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+            }}
+          >
+            🗑️ Delete
+          </button>
+        </div>
       </div>
+
+      {isEditing && (
+        <HabitForm
+          initialData={{
+            name: habit.name,
+            description: habit.description,
+            frequency: habit.frequency,
+          }}
+          onSubmit={handleUpdate}
+          onCancel={() => setIsEditing(false)}
+        />
+      )}
 
       <div style={cardStyle}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem' }}>
