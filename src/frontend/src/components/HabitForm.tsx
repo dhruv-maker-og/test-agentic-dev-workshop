@@ -3,12 +3,14 @@ import { useState } from 'react'
 interface HabitFormProps {
   onSubmit: (data: { name: string; description: string; frequency: string }) => void
   onCancel: () => void
+  initialData?: { name: string; description: string; frequency: string }
 }
 
-export default function HabitForm({ onSubmit, onCancel }: HabitFormProps) {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [frequency, setFrequency] = useState('daily')
+export default function HabitForm({ onSubmit, onCancel, initialData }: HabitFormProps) {
+  const [name, setName] = useState(initialData?.name ?? '')
+  const [description, setDescription] = useState(initialData?.description ?? '')
+  const [frequency, setFrequency] = useState(initialData?.frequency ?? 'daily')
+  const isEditing = !!initialData
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +31,7 @@ export default function HabitForm({ onSubmit, onCancel }: HabitFormProps) {
       }}
     >
       <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>
-        Create New Habit
+        {isEditing ? 'Edit Habit' : 'Create New Habit'}
       </h3>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '0.75rem' }}>
@@ -109,7 +111,7 @@ export default function HabitForm({ onSubmit, onCancel }: HabitFormProps) {
               fontSize: '0.9rem',
             }}
           >
-            Create Habit
+            {isEditing ? 'Save Changes' : 'Create Habit'}
           </button>
           <button
             type="button"

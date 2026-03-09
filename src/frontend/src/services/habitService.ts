@@ -71,3 +71,27 @@ export async function toggleHabitLog(id: number): Promise<{ completed: boolean }
   }
   return res.json()
 }
+
+export async function updateHabit(id: number, payload: CreateHabitPayload): Promise<Habit> {
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error || 'Failed to update habit')
+  }
+  return res.json()
+}
+
+export async function deleteHabit(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error || 'Failed to delete habit')
+  }
+}
