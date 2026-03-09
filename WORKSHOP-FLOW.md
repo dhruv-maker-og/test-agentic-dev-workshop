@@ -1,279 +1,211 @@
-# Agentic SDLC Workshop — Flow Reference
+# Workshop Flow
 
-> One business requirement → tested, working code → driven by AI agents at every step.
-
----
-
-## The Two Inputs That Drive Everything
-
-```
-VITE_APP_NAME  (in .env.example)   →  App name in Navbar, Login, Register pages
-Issue #1       (GitHub)            →  Everything else — BRD, Issues, schema,
-                                      API, UI, tests — all derived from this
-```
+Step-by-step guide for running the agentic SDLC workshop from Issue #1 to passing Playwright tests.
 
 ---
 
-## Pre-Workshop — Facilitator
+## Before You Start
 
-| Step | Action | Detail |
-|------|--------|--------|
-| 1 | Set `VITE_APP_NAME` in `.env.example` | e.g. `"BookIt"`, `"FoodOrder"`, `"HelpDesk"` |
-| 2 | Create GitHub Issue #1 | `[REQUIREMENT] {Feature Name}` — business requirement only, no tech spec |
-| 3 | Run setup checklist | clone → npm install → prisma migrate → seed → verify auth works |
-
-**Participants see on first run:**
-```
-Login page with app name  →  authenticate  →  "Features coming soon"
-```
+1. Set `VITE_APP_NAME` in `src/frontend/.env` — e.g. `VITE_APP_NAME=BookIt`
+2. Create GitHub Issue #1 with the `[REQUIREMENT]` label and your feature description
+3. Verify the app runs — login works, "Features coming soon" appears after login
 
 ---
 
-## Phase 1 — Requirements (PM)
+## Step 1 — Run brd-agent (PM)
 
+Go to **github.com → your repo → Copilot tab → Agents**
+
+Select `brd-agent` and type:
 ```
-Issue #1
-    │
-    ▼
-┌─────────────┐
-│  brd-agent  │  reads Issue #1
-│             │  writes docs/requirements/BRD.md
-└─────────────┘
-    │
-    ▼  PR raised
-   👤 PM reviews BRD                         ← Gate 1
-    │  merge
-    ▼
-┌──────────────────────┐
-│  user-story-agent    │  reads copilot-instructions.md
-│                      │  reads BRD.md
-│                      │  identifies functional slices
-│                      │  derives domain language from BRD
-│                      │  writes issues/*.md files (one per role per slice)
-└──────────────────────┘
-    │
-    ▼  PR raised
-   👤 PM reviews issue files                 ← Gate 2
-    │  merge
-    ▼
-  GitHub Actions triggers automatically
-    │
-    ▼
-  GitHub Issues created with labels
-  [DATABASE]  [BACKEND]  [FRONTEND]  [PLAYWRIGHT]
+Create a BRD from Issue #1
 ```
+
+Wait for it to raise a PR with `docs/requirements/BRD.md`
+
+**Review the PR — check:**
+- Functional requirements match your Issue #1
+- Out of scope items are explicitly listed
+- Assumptions are documented
+
+**Merge when satisfied.**
 
 ---
 
-## Phase 2 — Architecture (Architect)
+## Step 2 — Run user-story-agent (PM)
 
+Select `user-story-agent` and type:
 ```
-BRD + GitHub Issues
-    │
-    ▼
-┌──────────────────┐
-│  design-agent    │  reads BRD + all [user-story] Issues
-│                  │  produces docs/design/design-doc.md
-│                  │  produces src/prisma/schema.prisma additions
-│                  │  defines all data-testid values
-└──────────────────┘
-    │
-    ▼  PR raised
-   👤 Architect reviews design doc + schema  ← Gate 3
-    │  merge
-    ▼
-  Assign [DATABASE] Issue → Copilot
-    │
-    ▼
-┌────────────────────────┐
-│  Copilot Coding Agent  │  reads [DATABASE] Issue
-│  (DATABASE)            │  adds domain models to schema.prisma
-│                        │  runs prisma migrate dev
-└────────────────────────┘
-    │
-    ▼  PR raised
-   👤 Architect reviews migration            ← Gate 4
-    │  merge
-    ▼
-  Schema unblocked — Backend Dev can proceed
+Create user stories from the BRD
 ```
+
+Wait for it to raise a PR with `issues/*.md` files
+
+**Review the PR — check:**
+- Slice names are derived from the BRD domain language (not generic names)
+- DATABASE issue has Models, Relationships, and Seed Data sections
+- FRONTEND issue lists all data-testid values
+- PLAYWRIGHT data-testid values match FRONTEND issue exactly
+
+**Merge when satisfied.**
+
+GitHub Actions triggers automatically and creates all GitHub Issues with labels.
 
 ---
 
-## Phase 3 — Backend (Backend Dev)
+## Step 3 — Run design-agent (Architect)
 
+Select `design-agent` and type:
 ```
-[BACKEND] Issue + merged schema
-    │
-    ▼
-  Assign [BACKEND] Issue → Copilot
-    │
-    ▼
-┌────────────────────────┐
-│  Copilot Coding Agent  │  reads [BACKEND] Issue
-│  (BACKEND)             │  reads schema.prisma
-│                        │  builds API routes + controllers
-│                        │  applies auth middleware to protected routes
-└────────────────────────┘
-    │
-    ▼  PR raised
-   👤 Backend Dev reviews API               ← Gate 5
-    │  checks: auth middleware, response shapes, HTTP status codes
-    │  merge
-    ▼
-┌──────────────────────┐
-│  unit-test-agent     │  reads implemented routes + controllers
-│                      │  reads design-doc API contracts
-│                      │  generates Jest test suite
-│                      │  happy path + auth + validation per endpoint
-└──────────────────────┘
-    │
-    ▼  PR raised
-   👤 Backend Dev reviews tests             ← Gate 5b
-    │  merge
+Create the design document and schema from the BRD and Issues
 ```
+
+Wait for it to raise a PR with:
+- `docs/design/design-doc.md`
+- Updated `src/prisma/schema.prisma`
+
+**Review the PR — check:**
+- All domain models from the [DATABASE] Issue are present in the schema
+- Relations between models are correct
+- data-testid values in the design doc match the FRONTEND Issue
+- Mermaid diagrams are valid
+
+**Merge when satisfied.**
 
 ---
 
-## Phase 4 — Frontend (UI Dev)
+## Step 4 — Assign [DATABASE] Issue to Copilot (Architect)
 
-```
-[FRONTEND] Issue + merged API
-    │
-    ▼
-  Assign [FRONTEND] Issue → Copilot
-    │
-    ▼
-┌────────────────────────┐
-│  Copilot Coding Agent  │  reads [FRONTEND] Issue
-│  (FRONTEND)            │  reads design-doc (data-testid values)
-│                        │  builds components + pages
-│                        │  replaces HomePage placeholder with feature UI
-│                        │  adds data-testid to all interactive elements
-└────────────────────────┘
-    │
-    ▼  PR raised
-   👤 UI Dev reviews components             ← Gate 6
-    │  checks: data-testid values present, real data from API, journey works
-    │  merge
-```
+Go to **Issues tab** → open the `[DATABASE]` Issue → assign it to **Copilot**
+
+Wait for PR with:
+- Updated `src/prisma/schema.prisma`
+- Migration files
+- Updated `src/prisma/seed.ts` with sample domain data
+
+**Review the PR — check:**
+- Migration runs without errors
+- Seed data has at least 3 realistic sample records
+- Pre-built User model is unchanged
+- Test user (`test@example.com`) is still in seed
+
+**Merge when satisfied.**
 
 ---
 
-## Phase 5 — Testing (QA Engineer)
+## Step 5 — Assign [BACKEND] Issue to Copilot (Backend Dev)
 
-```
-[PLAYWRIGHT] Issue + merged frontend
-    │
-    ▼
-┌──────────────────────────┐
-│  playwright-agent        │  reads [PLAYWRIGHT] Issue (journey steps)
-│                          │  reads design-doc (data-testid values)
-│                          │  reads frontend components
-│                          │  generates e2e/ test files
-│                          │  uses getByTestId — no CSS selectors
-└──────────────────────────┘
-    │
-    ▼  PR raised
-   👤 QA reviews tests                      ← Gate 7
-    │  checks: data-testid selectors, journey matches Issue
-    │  merge
-    ▼
-  npx playwright test --ui
-    │
-    ▼
-  ✅ ALL GREEN — demo moment
-```
+Go to **Issues tab** → open the `[BACKEND]` Issue → assign it to **Copilot**
+
+Wait for PR with:
+- `src/backend/routes/` — new route files
+- `src/backend/controllers/` — new controller files
+
+**Review the PR — check:**
+- All endpoints from the Issue are implemented
+- Protected endpoints use auth middleware
+- Capacity/business rule checks are implemented
+- No frontend files modified
+
+**Merge when satisfied.**
 
 ---
 
-## The 7 Human-in-the-Loop Gates
+## Step 6 — Assign [FRONTEND] Issue to Copilot (UI Dev)
 
-Every agent output goes through a PR review before it affects the codebase.
+Go to **Issues tab** → open the `[FRONTEND]` Issue → assign it to **Copilot**
 
-| Gate | PR | Reviewer | Key Check |
-|------|----|----------|-----------|
-| 1 | BRD.md | PM | FRs numbered and specific? Out of scope explicit? |
-| 2 | issues/*.md files | PM | One slice per file? 2-4 acceptance criteria? |
-| 3 | design-doc + schema | Architect | All domain models present? data-testids listed? |
-| 4 | DATABASE migration | Architect | Correct fields and relations? User model untouched? |
-| 5 | BACKEND API | Backend Dev | Auth middleware? Response shapes match Issue? |
-| 6 | FRONTEND UI | UI Dev | data-testid values present? Real data from API? |
-| 7 | Playwright tests | QA | getByTestId selectors only? Journey matches Issue? |
+Wait for PR with:
+- New pages and components
+- Updated `HomePage.tsx` — placeholder replaced with real feature UI
 
----
+**Review the PR — check:**
+- HomePage no longer shows "Features coming soon"
+- All data-testid values from the Issue are present on the correct elements
+- UI calls the correct API endpoints
+- No backend files modified
 
-## The data-testid Contract
-
-This is the invisible thread connecting design → code → tests.
-
-```
-design-agent
-  defines data-testid values in design-doc component tree
-        │
-        ▼
-user-story-agent
-  copies data-testid values into [FRONTEND] and [PLAYWRIGHT] Issues
-        │
-        ├──────────────────────────────────┐
-        ▼                                  ▼
-Copilot Coding Agent (FRONTEND)     playwright-agent
-  implements data-testid on          reads data-testid values
-  every interactive element          writes getByTestId selectors
-```
-
-A break anywhere in this chain causes Playwright tests to fail.
-The PR review gates are where humans catch breaks before they propagate.
+**Merge when satisfied.**
 
 ---
 
-## Dependency Order — Why It Matters
+## Step 7 — Run playwright-agent (QA Engineer)
 
+Select `playwright-agent` and type:
 ```
-DATABASE  →  BACKEND  →  FRONTEND  →  TESTS
-
-Schema must exist    API must exist    UI connects     Tests run against
-before API can       before UI can     to working      complete working
-reference models     fetch data        API             app
+Generate Playwright tests from the [PLAYWRIGHT] Issue
 ```
 
-Running out of order causes:
-- Missing table errors
-- Import failures
-- Broken API calls
-- Selector not found in tests
+Wait for PR with `e2e/` test files
+
+**Review the PR — check:**
+- All selectors use `data-testid` — no CSS classes or text content
+- Journey steps match the [PLAYWRIGHT] Issue exactly
+- `beforeEach` handles login — not repeated inside individual tests
+- Missing data-testid values are noted in the PR description
+
+**Merge when satisfied.**
 
 ---
 
-## Extension Slices
+## Step 8 — Run Playwright Tests (QA Engineer)
 
-If the primary slice is complete with time to spare:
+Ensure both dev servers are running:
+```bash
+# Terminal 1 — backend
+cd src/backend && npm run dev
 
+# Terminal 2 — frontend
+cd src/frontend && npm run dev
 ```
-PM triggers user-story-agent again
-  → generates extension slice Issues
-  → pipeline repeats from Architect step
-  → [PLAYWRIGHT] Issue already has optional extension journey section
+
+Run the tests:
+```bash
+npx playwright test --ui
 ```
+
+**All green = workshop complete ✅**
 
 ---
 
-## What Never Changes Between Workshops
+## Human-in-the-Loop Gates Summary
 
-```
-.github/copilot-instructions.md    tech stack, standards, pre-built list
-.github/agents/*.agent.md          agent personas and procedures
-.github/skills/*.md                detailed agent instructions
-.github/workflows/create-issues.yml  GitHub Actions pipeline
-src/ scaffold                      auth, User model, seed user, shell UI
-AGENTS.md                          Coding Agent instructions
-```
+| Gate | Who Reviews | What to Check |
+|------|-------------|---------------|
+| 1 — BRD PR | PM | FRs match requirement, assumptions documented |
+| 2 — Issue files PR | PM | Slice names, seed data section, testid values |
+| 3 — Design doc PR | Architect | Schema correct, relations, testid alignment |
+| 4 — DATABASE PR | Architect | Migration clean, seed data populated |
+| 5 — BACKEND PR | Backend Dev | All endpoints, auth middleware, business rules |
+| 6 — FRONTEND PR | UI Dev | HomePage updated, testids present |
+| 7 — Playwright PR | QA Engineer | data-testid only, journey matches Issue |
 
-## What Changes Between Workshops
+---
 
-```
-VITE_APP_NAME in .env.example      set by facilitator
-GitHub Issue #1                    written by facilitator
-```
+## Troubleshooting
 
-Everything else is generated by agents during the workshop.
+**brd-agent produces a vague BRD**
+- Check Issue #1 has enough detail — add acceptance criteria and out of scope items
+- Re-run the agent with: `Recreate the BRD from Issue #1 with more specific functional requirements`
+
+**user-story-agent uses wrong domain names**
+- The BRD domain language drives the slice names — check the BRD uses the correct entity names
+- Merge the BRD PR first before running user-story-agent
+
+**GitHub Actions does not create Issues after merge**
+- Go to repo Settings → Actions → General → ensure Read and write permissions is enabled
+
+**DATABASE migration fails**
+- Check schema.prisma for syntax errors before merging the PR
+- Ensure relations have correct `@relation` attributes
+
+**Frontend shows blank page after DATABASE merge**
+- Seed data was not added — check `src/prisma/seed.ts` and run `npx prisma db seed` manually
+
+**Playwright tests fail on selectors**
+- A data-testid is missing from a component — add it manually and re-run
+- Check the PR description — playwright-agent lists missing testids there
+
+**Browser tab shows "Workshop App" instead of app name**
+- Ensure `src/frontend/.env` exists with `VITE_APP_NAME=YourAppName`
+- Restart the frontend dev server after editing `.env`
