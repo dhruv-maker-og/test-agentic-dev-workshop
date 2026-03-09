@@ -1,5 +1,5 @@
 {
-  "name": "foodorderapp",
+  "name": "workshopapp",
   "version": "1.0.0",
   "scripts": {
     "test:e2e": "playwright test",
