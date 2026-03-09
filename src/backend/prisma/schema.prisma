@@ -14,6 +14,46 @@ model User {
   password  String
   name      String
   createdAt DateTime @default(now())
+  cart      Cart?
 }
 
-// All domain models are added during the workshop by agents
+// NEW — added by [DATABASE] Restaurant & Menu Item Models
+model Restaurant {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  createdAt   DateTime   @default(now())
+  menuItems   MenuItem[]
+}
+
+// NEW — added by [DATABASE] Restaurant & Menu Item Models
+model MenuItem {
+  id           Int        @id @default(autoincrement())
+  name         String
+  description  String
+  price        Float
+  restaurantId Int
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  cartItems    CartItem[]
+}
+
+// NEW — added by [DATABASE] Cart & CartItem Models
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+// NEW — added by [DATABASE] Cart & CartItem Models
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  cartId     Int
+  menuItemId Int
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+}
