@@ -250,3 +250,93 @@ export const toggleLog = async (
     res.status(500).json({ error: 'Internal server error' })
   }
 }
+
+/**
+ * PUT /api/habits/:id
+ * Updates a habit's name, description, or frequency.
+ */
+export const updateHabit = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.userId!
+    const habitId = parseInt(req.params.id, 10)
+
+    if (isNaN(habitId)) {
+      res.status(400).json({ error: 'Invalid habit ID' })
+      return
+    }
+
+    const habit = await prisma.habit.findFirst({
+      where: { id: habitId, userId },
+    })
+
+    if (!habit) {
+      res.status(404).json({ error: 'Habit not found' })
+      return
+    }
+
+    const { name, description, frequency } = req.body
+
+    const updated = await prisma.habit.update({
+      where: { id: habitId },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(frequency !== undefined && { frequency }),
+      },
+    })
+
+    res.status(200).json({
+      id: updated.id,
+      userId: updated.userId,
+      name: updated.name,
+      description: updated.description,
+      frequency: updated.frequency,
+      createdAt: updated.createdAt,
+    })
+  } catch {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+/**
+ * DELETE /api/habits/:id
+ * Deletes a habit and all associated completion logs.
+ */
+export const deleteHabit = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.userId!
+    const habitId = parseInt(req.params.id, 10)
+
+    if (isNaN(habitId)) {
+      res.status(400).json({ error: 'Invalid habit ID' })
+      return
+    }
+
+    const habit = await prisma.habit.findFirst({
+      where: { id: habitId, userId },
+    })
+
+    if (!habit) {
+      res.status(404).json({ error: 'Habit not found' })
+      return
+    }
+
+    await prisma.habitLog.deleteMany({
+      where: { habitId },
+    })
+
+    await prisma.habit.delete({
+      where: { id: habitId },
+    })
+
+    res.status(204).send()
+  } catch {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
