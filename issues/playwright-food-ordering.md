@@ -44,6 +44,7 @@ From [FRONTEND] Restaurant & Menu Browsing:
 - `menu-item-list` — used to verify menu items container
 - `menu-item-card` — used to verify menu item count
 - `menu-item-name` — used to verify item name text
+- `menu-item-description` — used to verify item description text
 - `menu-item-price` — used to verify item price text
 - `add-to-cart-button` — used to click add to cart
 - `back-button` — used to navigate back to restaurant list

@@ -59,7 +59,6 @@ Seed data is required for:
 
 ## Acceptance Criteria
 - [ ] Migration runs without errors
-- [ ] Restaurant model created with id, name, description, and createdAt fields
-- [ ] MenuItem model created with id, name, description, price, restaurantId, and createdAt fields
+- [ ] Restaurant and MenuItem models created with correct fields and relations
 - [ ] Seed data populates 2 restaurants and 6 menu items (3 per restaurant)
 - [ ] Pre-built User model and test user seed data unchanged
