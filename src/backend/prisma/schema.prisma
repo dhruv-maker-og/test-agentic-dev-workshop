@@ -14,6 +14,28 @@ model User {
   password  String
   name      String
   createdAt DateTime @default(now())
+  habits    Habit[]
 }
 
-// All domain models are added during the workshop by agents
+// NEW — Habit Tracking Feature
+model Habit {
+  id          Int        @id @default(autoincrement())
+  userId      Int
+  name        String
+  description String
+  frequency   String
+  createdAt   DateTime   @default(now())
+  user        User       @relation(fields: [userId], references: [id])
+  logs        HabitLog[]
+}
+
+// NEW — Habit Completion Logs
+model HabitLog {
+  id            Int      @id @default(autoincrement())
+  habitId       Int
+  completedDate DateTime
+  createdAt     DateTime @default(now())
+  habit         Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, completedDate])
+}
