@@ -159,7 +159,7 @@ cd src/backend && npm run dev
 cd src/frontend && npm run dev
 ```
 
-Run the tests:
+Run the tests from root folder:
 ```bash
 npx playwright test --ui
 ```
