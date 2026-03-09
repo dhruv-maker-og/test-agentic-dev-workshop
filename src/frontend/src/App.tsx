@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
+import HabitDetailPage from './pages/HabitDetailPage'
 import Navbar from './components/Navbar'
 
 const isAuthenticated = () => !!localStorage.getItem('token')
@@ -23,7 +24,7 @@ export default function App() {
               <Navbar />
               <Routes>
                 <Route path="/home" element={<HomePage />} />
-                {/* Feature routes are added by Coding Agent during the workshop */}
+                <Route path="/habits/:id" element={<HabitDetailPage />} />
               </Routes>
             </ProtectedRoute>
           }
